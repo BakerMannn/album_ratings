@@ -19,10 +19,10 @@ album = 'Drake - Honestly, Nevermind'
 
 #############################################################################
 #Data Import
-df = pd.read_excel('data.xlsx')
+df = pd.read_excel(f'{album}/data.xlsx')
 
 #Split
-labels = df['songs']
+labels = df['song']
 values = df.drop('song', axis=1)
 
 #Categorical and Numerical Features
@@ -45,7 +45,7 @@ combined_pipe = ColumnTransformer([('num', num_pipe, num_cols),
 #############################################################################
 #Optimal N_Cluster Selection
 inertias=[]
-k_list = range(1,15)
+k_list = range(1,10)
 
 for k in k_list:
     full_pipe = make_pipeline(combined_pipe,
@@ -118,10 +118,8 @@ fig = px.scatter_3d(cluster_df,
                     template = 'seaborn'
                     )
 fig.show()
-fig.write_html('clusters.html')
-
+fig.write_html(f'{album}/{album}_clusters.html')
 #############################################################################
 #Data Export
 final_df = df.merge(cluster_df, how = 'inner', on='song')
-final_df.to_excel('clusters.xlsx', index=False)
-
+final_df.to_excel(f'{album}/{album}_clusters.xlsx', index=False)
