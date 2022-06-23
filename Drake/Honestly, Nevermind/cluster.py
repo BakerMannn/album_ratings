@@ -15,11 +15,12 @@ from sklearn.cluster import KMeans
 
 #############################################################################
 #Global Variables
-album = 'Drake - Honestly, Nevermind'
+artist = 'Drake'
+album = 'Honestly, Nevermind'
 
 #############################################################################
 #Data Import
-df = pd.read_excel(f'{album}/data.xlsx')
+df = pd.read_excel(f'{artist}/{album}/data.xlsx')
 
 #Split
 labels = df['song']
@@ -49,8 +50,8 @@ k_list = range(1,10)
 
 for k in k_list:
     full_pipe = make_pipeline(combined_pipe,
-                          PCA(n_components=3),
-                          KMeans(n_clusters=k))
+                          PCA(n_components=3, random_state=123),
+                          KMeans(n_clusters=k, random_state=123))
     full_pipe.fit(values)
     inertias.append([k, full_pipe[2].inertia_])
 
@@ -118,8 +119,8 @@ fig = px.scatter_3d(cluster_df,
                     template = 'seaborn'
                     )
 fig.show()
-fig.write_html(f'{album}/{album}_clusters.html')
+fig.write_html(f'{artist}/{album}/{album}_clusters.html')
 #############################################################################
 #Data Export
 final_df = df.merge(cluster_df, how = 'inner', on='song')
-final_df.to_excel(f'{album}/{album}_clusters.xlsx', index=False)
+final_df.to_excel(f'{artist}/{album}/{album}_clusters.xlsx', index=False)
