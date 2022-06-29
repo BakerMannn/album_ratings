@@ -17,7 +17,6 @@ from sklearn.cluster import KMeans
 ############################################################################
 ##Global Variables
 artist = 'Drake'
-album = 'Honestly, Nevermind'
 
 #############################################################################
 #Data Import

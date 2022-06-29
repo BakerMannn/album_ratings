@@ -17,7 +17,6 @@ from sklearn.cluster import KMeans
 ############################################################################
 ##Global Variables
 artist = 'Drake'
-album = 'Honestly, Nevermind'
 pca_components = 3
 
 #############################################################################
@@ -79,18 +78,24 @@ n_clusters = optimal_n_clusters(inertia_df['inertia'])
 #KMeans Clustering
 
 #Clustering Pipeline
-full_pipe = make_pipeline(full_pipe,
+"""
+full_pipe = make_pipeline(combined_pipe,
                         PCA(n_components=pca_components, random_state=123),
                         KMeans(n_clusters=n_clusters, random_state=123))
+"""
 
-clusters = full_pipe.fit_predict(values)
+full_pipe = make_pipeline(combined_pipe,
+                        PCA(n_components=pca_components, random_state=123))
 pca = full_pipe.fit_transform(values)
+kmean = KMeans(n_clusters=n_clusters, random_state=123)
+clusters = kmean.fit_predict(pca)
 
 len(clusters)
 len(pca)
 
 cluster_df = pd.DataFrame({'album':labels['album'],
                            'song':labels['song'],
+                           'rating':values['overall'],
                            'cluster':clusters, 
                            'PC1':pca[:,0],
                            'PC2':pca[:,1],
@@ -120,18 +125,20 @@ fig = px.scatter_3d(cluster_df,
                         hover_name='song',
                         hover_data={'PC1': False, 'PC2': False, 'PC3': False},
                         opacity=0.7,
+                        size='rating',
                         #color_discrete_map=color_map,
                         title = artist,
                         template = 'seaborn',
                         symbol='album'
                         )
+
 fig.show()
 fig.write_html(f'{artist}/{artist}_clusters.html')
 
 #############################################################################
 #Data Export
 final_df = df.merge(cluster_df, how = 'inner', on='song')
-final_df.to_excel(f'{artist}/{album}_clusters.xlsx', index=False)
+final_df.to_excel(f'{artist}/clusters.xlsx', index=False)
 
 #############################################################################
 #Driver's Plot
