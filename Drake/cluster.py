@@ -21,11 +21,11 @@ album = 'Honestly, Nevermind'
 
 #############################################################################
 #Data Import
-df = pd.read_excel(f'{artist}/{album}/data.xlsx')
+df = pd.read_excel(f'{artist}/data.xlsx')
 
 #Split
-labels = df['song']
-values = df.drop('song', axis=1)
+labels = df[['album', 'song']]
+values = df.drop(['album', 'song'], axis=1)
 
 #Categorical and Numerical Features
 num_cols = values.select_dtypes(exclude=['object']).columns.tolist()
@@ -85,11 +85,12 @@ full_pipe = make_pipeline(combined_pipe,
 clusters = full_pipe.fit_predict(values)
 pca = full_pipe.fit_transform(values)
 
-cluster_df = pd.DataFrame({'song':labels, 
-                        'cluster':clusters, 
-                        'PC1':pca[:,0],
-                        'PC2':pca[:,1],
-                        'PC3':pca[:,2]})
+cluster_df = pd.DataFrame({'album':labels['album'],
+                           'song':labels['song'],
+                           'cluster':clusters, 
+                           'PC1':pca[:,0],
+                           'PC2':pca[:,1],
+                           'PC3':pca[:,2]})
 cluster_df['song'] = cluster_df['song'].astype(str)
 df['song'] = df['song'].astype(str)
 
@@ -116,17 +117,17 @@ fig = px.scatter_3d(cluster_df,
                         hover_data={'PC1': False, 'PC2': False, 'PC3': False},
                         opacity=0.7,
                         #color_discrete_map=color_map,
-                        title = album,
-                        template = 'seaborn'
-                        #symbol=
+                        title = artist,
+                        template = 'seaborn',
+                        symbol='album'
                         )
 fig.show()
-fig.write_html(f'{artist}/{album}/{album}_clusters.html')
+fig.write_html(f'{artist}/{artist}_clusters.html')
 
 #############################################################################
 #Data Export
 final_df = df.merge(cluster_df, how = 'inner', on='song')
-final_df.to_excel(f'{artist}/{album}/{album}_clusters.xlsx', index=False)
+final_df.to_excel(f'{artist}/{album}_clusters.xlsx', index=False)
 
 #############################################################################
 #Driver's Plot

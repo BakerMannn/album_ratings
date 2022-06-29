@@ -18,14 +18,15 @@ from sklearn.cluster import KMeans
 ##Global Variables
 artist = 'Drake'
 album = 'Honestly, Nevermind'
+pca_components = 3
 
 #############################################################################
 #Data Import
-df = pd.read_excel(f'{artist}/{album}/data.xlsx')
+df = pd.read_excel(f'{artist}/data.xlsx')
 
 #Split
-labels = df['song']
-values = df.drop('song', axis=1)
+labels = df[['album', 'song']]
+values = df.drop(['album', 'song'], axis=1)
 
 #Categorical and Numerical Features
 num_cols = values.select_dtypes(exclude=['object']).columns.tolist()
@@ -51,7 +52,7 @@ k_list = range(1,10)
 
 for k in k_list:
     full_pipe = make_pipeline(combined_pipe,
-                              PCA(n_components=3, random_state=123),
+                              PCA(n_components=pca_components, random_state=123),
                               KMeans(n_clusters=k, random_state=123))
     full_pipe.fit(values)
     inertias.append([k, full_pipe[2].inertia_])
@@ -78,18 +79,22 @@ n_clusters = optimal_n_clusters(inertia_df['inertia'])
 #KMeans Clustering
 
 #Clustering Pipeline
-full_pipe = make_pipeline(combined_pipe,
-                        PCA(n_components=3, random_state=123),
+full_pipe = make_pipeline(full_pipe,
+                        PCA(n_components=pca_components, random_state=123),
                         KMeans(n_clusters=n_clusters, random_state=123))
 
 clusters = full_pipe.fit_predict(values)
 pca = full_pipe.fit_transform(values)
 
-cluster_df = pd.DataFrame({'song':labels, 
-                        'cluster':clusters, 
-                        'PC1':pca[:,0],
-                        'PC2':pca[:,1],
-                        'PC3':pca[:,2]})
+len(clusters)
+len(pca)
+
+cluster_df = pd.DataFrame({'album':labels['album'],
+                           'song':labels['song'],
+                           'cluster':clusters, 
+                           'PC1':pca[:,0],
+                           'PC2':pca[:,1],
+                           'PC3':pca[:,2]})
 cluster_df['song'] = cluster_df['song'].astype(str)
 df['song'] = df['song'].astype(str)
 
@@ -116,17 +121,17 @@ fig = px.scatter_3d(cluster_df,
                         hover_data={'PC1': False, 'PC2': False, 'PC3': False},
                         opacity=0.7,
                         #color_discrete_map=color_map,
-                        title = album,
-                        template = 'seaborn'
-                        #symbol=
+                        title = artist,
+                        template = 'seaborn',
+                        symbol='album'
                         )
 fig.show()
-fig.write_html(f'{artist}/{album}/{album}_clusters.html')
+fig.write_html(f'{artist}/{artist}_clusters.html')
 
 #############################################################################
 #Data Export
 final_df = df.merge(cluster_df, how = 'inner', on='song')
-final_df.to_excel(f'{artist}/{album}/{album}_clusters.xlsx', index=False)
+final_df.to_excel(f'{artist}/{album}_clusters.xlsx', index=False)
 
 #############################################################################
 #Driver's Plot
