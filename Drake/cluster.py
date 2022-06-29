@@ -80,13 +80,11 @@ n_clusters = optimal_n_clusters(inertia_df['inertia'])
 #Clustering Pipeline
 
 full_pipe = make_pipeline(combined_pipe,
-                        PCA(n_components=pca_components, random_state=123))
-pca = full_pipe.fit_transform(values)
-kmean = KMeans(n_clusters=n_clusters, random_state=123)
-clusters = kmean.fit_predict(pca)
+                        PCA(n_components=pca_components, random_state=123),
+                        KMeans(n_clusters=n_clusters, random_state=123))
 
-len(clusters)
-len(pca)
+pca = full_pipe[0:2].fit_transform(values)
+clusters = full_pipe.fit_predict(values)
 
 cluster_df = pd.DataFrame({'album':labels['album'],
                            'song':labels['song'],
